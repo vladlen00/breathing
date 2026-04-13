@@ -1,0 +1,33 @@
+import urllib.request, json
+
+TOKEN = "8722512918:AAG4PhEEoddgTObNhK565ijQ26Ls2GJMJZM"
+CHAT_ID = -1003838914998
+
+text = "тест"
+
+payload = {
+    "chat_id": CHAT_ID,
+    "text": text,
+    "reply_markup": {
+        "inline_keyboard": [[
+            {
+                "text": "тестовая кнопка",
+                "url": "https://t.me/relax2000_bot/breathing"
+            }
+        ]]
+    }
+}
+
+data = json.dumps(payload).encode("utf-8")
+req = urllib.request.Request(
+    f"https://api.telegram.org/bot{TOKEN}/sendMessage",
+    data=data,
+    headers={"Content-Type": "application/json"}
+)
+
+with urllib.request.urlopen(req) as resp:
+    result = json.loads(resp.read())
+    if result.get("ok"):
+        print("✅ Пост опубликован!")
+    else:
+        print("❌ Ошибка:", json.dumps(result, ensure_ascii=False, indent=2))

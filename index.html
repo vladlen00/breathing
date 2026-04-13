@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Дыхание 4·7·8</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Jost:wght@200;300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --deep: #07080f;
+    --violet: #6c63ff;
+    --lavender: #a89cff;
+    --sky: #7ec8e3;
+    --glow: rgba(108,99,255,0.35);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--deep);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Jost', sans-serif;
+    overflow: hidden;
+    color: #fff;
+    touch-action: manipulation;
+  }
+
+  .stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+    opacity: 0;
+    animation: twinkle var(--d,4s) ease-in-out infinite var(--delay,0s);
+  }
+  @keyframes twinkle {
+    0%,100%{opacity:0;transform:scale(0.8)}
+    50%{opacity:var(--op,0.5);transform:scale(1)}
+  }
+
+  .nebula {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 30%, rgba(108,99,255,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 80% 70%, rgba(126,200,227,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(24px, 5vh, 44px);
+    padding: 24px;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(1.2rem, 4vw, 1.6rem);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--lavender);
+    opacity: 0.7;
+    text-align: center;
+  }
+
+  .circle-zone {
+    position: relative;
+    width: clamp(270px, 75vw, 360px);
+    height: clamp(270px, 75vw, 360px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ambient {
+    position: absolute;
+    inset: -30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
+    filter: blur(20px);
+    animation: ambientPulse 4s ease-in-out infinite;
+  }
+  @keyframes ambientPulse {
+    0%,100%{opacity:0.4;transform:scale(0.95)}
+    50%{opacity:0.8;transform:scale(1.05)}
+  }
+
+  .breathing-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    position: absolute;
+    inset: 0;
+  }
+  .track-circle { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 3; }
+  .progress-arc {
+    fill: none;
+    stroke: url(#arcGrad);
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.1s linear;
+    filter: drop-shadow(0 0 6px var(--violet));
+  }
+
+  .inner-circle {
+    position: relative;
+    width: 65%;
+    height: 65%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, rgba(168,156,255,0.25) 0%, rgba(108,99,255,0.12) 50%, rgba(7,8,15,0.6) 100%);
+    border: 1px solid rgba(168,156,255,0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: transform 0.3s ease;
+    box-shadow: inset 0 0 30px rgba(108,99,255,0.1), 0 0 40px rgba(108,99,255,0.15);
+  }
+
+  .phase-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    color: var(--lavender);
+    text-align: center;
+    line-height: 1.2;
+    transition: opacity 0.4s ease;
+  }
+
+  .countdown {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: clamp(2.4rem, 7vw, 3.4rem);
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 20px var(--lavender);
+    transition: opacity 0.3s ease;
+  }
+
+  .phases-row {
+    display: flex;
+    gap: 22px;
+    align-items: center;
+  }
+  .phase-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.35;
+    transition: opacity 0.4s ease;
+  }
+  .phase-dot.active { opacity: 1; }
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--lavender);
+    box-shadow: 0 0 8px var(--violet);
+  }
+  .dot-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--lavender);
+    white-space: nowrap;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* Timer bar */
+  .session-bar-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+  }
+  .session-bar-track {
+    width: 100%;
+    height: 2px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .session-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--sky), var(--violet));
+    border-radius: 2px;
+    transition: width 1s linear;
+  }
+  .session-time {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: rgba(168,156,255,0.4);
+    text-transform: uppercase;
+  }
+
+  .cycle-info {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(168,156,255,0.4);
+    text-align: center;
+  }
+
+  .start-btn {
+    background: none;
+    border: 1px solid rgba(168,156,255,0.3);
+    color: var(--lavender);
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 0.88rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    padding: 15px 48px;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 0 20px rgba(108,99,255,0.1);
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .start-btn::before {
+    content:'';
+    position:absolute;
+    inset:0;
+    background: radial-gradient(circle at center, rgba(108,99,255,0.2), transparent);
+    opacity:0;
+    transition: opacity 0.4s ease;
+  }
+  .start-btn:hover::before, .start-btn:active::before { opacity:1; }
+  .start-btn:hover, .start-btn:active {
+    border-color: rgba(168,156,255,0.6);
+    box-shadow: 0 0 30px rgba(108,99,255,0.25);
+    color: #fff;
+  }
+
+  /* Finished screen */
+  .finish-msg {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+  }
+  .finish-msg.show { display: flex; }
+  .finish-icon {
+    font-size: 2.5rem;
+    animation: fadeIn 1s ease forwards;
+  }
+  .finish-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    color: var(--lavender);
+    opacity: 0;
+    animation: fadeIn 1s ease 0.5s forwards;
+  }
+  .finish-sub {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(168,156,255,0.5);
+    opacity: 0;
+    animation: fadeIn 1s ease 1s forwards;
+  }
+  @keyframes fadeIn { to { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="nebula"></div>
+
+<!-- Audio -->
+<audio id="bgAudio" preload="auto">
+  <source src="audio.mp3" type="audio/mpeg">
+</audio>
+
+<div class="container">
+  <div class="title">Дыхание 4 · 7 · 8</div>
+
+  <div class="circle-zone" id="circleZone">
+    <div class="ambient"></div>
+    <svg class="breathing-svg" viewBox="0 0 200 200">
+      <defs>
+        <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#7ec8e3"/>
+          <stop offset="100%" stop-color="#6c63ff"/>
+        </linearGradient>
+      </defs>
+      <circle class="track-circle" cx="100" cy="100" r="90"/>
+      <circle class="progress-arc" id="progressArc"
+        cx="100" cy="100" r="90"
+        stroke-dasharray="565.5"
+        stroke-dashoffset="565.5"/>
+    </svg>
+    <div id="particles" style="position:absolute;inset:0;pointer-events:none;"></div>
+    <div class="inner-circle" id="innerCircle">
+      <div class="phase-label" id="phaseLabel">Готовы?</div>
+      <div class="countdown" id="countdown">—</div>
+    </div>
+  </div>
+
+  <div class="phases-row">
+    <div class="phase-dot" id="dot0"><div class="dot"></div><div class="dot-label">Вдох<br>4 сек</div></div>
+    <div class="phase-dot" id="dot1"><div class="dot"></div><div class="dot-label">Задержка<br>7 сек</div></div>
+    <div class="phase-dot" id="dot2"><div class="dot"></div><div class="dot-label">Выдох<br>8 сек</div></div>
+  </div>
+
+  <div class="session-bar-wrap" id="sessionBarWrap" style="display:none;">
+    <div class="session-bar-track"><div class="session-bar-fill" id="sessionBarFill"></div></div>
+    <div class="session-time" id="sessionTime">цикл 1 из 5</div>
+  </div>
+
+  <div class="cycle-info" id="cycleInfo">5 циклов · ~8 мин</div>
+
+  <button class="start-btn" id="startBtn">Начать практику</button>
+
+  <div class="finish-msg" id="finishMsg">
+    <div class="finish-icon">🌙</div>
+    <div class="finish-text">Практика завершена</div>
+    <div class="finish-sub">Побудьте в тишине ещё минуту</div>
+  </div>
+</div>
+
+<script>
+var IS_TELEGRAM = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData;
+if (!IS_TELEGRAM) {
+  document.body.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#0a0a1a;color:rgba(150,180,240,0.6);font-family:sans-serif;text-align:center;padding:32px;gap:12px;"><div style="font-size:2.5rem;">🌬</div><div style="font-size:1rem;letter-spacing:0.1em;line-height:1.6;">Доступно только участницам<br>закрытого клуба</div><div style="font-size:0.8rem;opacity:0.6;line-height:1.8;">Для доступа напиши боту<br><a href=\"https://t.me/Biochakirena_bot\" style=\"color:rgba(150,180,240,0.9);text-decoration:none;letter-spacing:0.05em;\">@Biochakirena_bot</a></div></div>';
+  throw new Error('Not Telegram');
+}
+
+// Stars
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 100; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = Math.random() * 2 + 0.5;
+  s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;width:${size}px;height:${size}px;--d:${3+Math.random()*5}s;--delay:${Math.random()*6}s;--op:${0.3+Math.random()*0.5}`;
+  starsEl.appendChild(s);
+}
+
+// Config
+const MAX_CYCLES = 5;
+const phases = [
+  { name: 'Вдох',     duration: 4, scale: 1.18, color: '#7ec8e3' },
+  { name: 'Задержка', duration: 7, scale: 1.18, color: '#a89cff' },
+  { name: 'Выдох',    duration: 8, scale: 1.0,  color: '#6c63ff' },
+];
+const CIRCUMFERENCE = 565.5;
+
+const arc         = document.getElementById('progressArc');
+const inner       = document.getElementById('innerCircle');
+const label       = document.getElementById('phaseLabel');
+const cntDown     = document.getElementById('countdown');
+const cycleInfo   = document.getElementById('cycleInfo');
+const startBtn    = document.getElementById('startBtn');
+const dots        = [0,1,2].map(i => document.getElementById('dot'+i));
+const sessionFill = document.getElementById('sessionBarFill');
+const sessionTime = document.getElementById('sessionTime');
+const sessionWrap = document.getElementById('sessionBarWrap');
+const finishMsg   = document.getElementById('finishMsg');
+const audio       = document.getElementById('bgAudio');
+
+let running = false;
+let cycle = 0;
+let rafId = null;
+let phaseIdx = 0;
+let phaseStart = null;
+
+function pad(n) { return String(Math.floor(n)).padStart(2,'0'); }
+function formatTime(s) { return `${Math.floor(s/60)}:${pad(s%60)}`; }
+
+function setArc(f) { arc.style.strokeDashoffset = CIRCUMFERENCE * (1 - f); }
+function setScale(s) { inner.style.transform = `scale(${s})`; }
+function activateDot(i) { dots.forEach((d,j) => d.classList.toggle('active', j===i)); }
+
+function spawnParticle() {
+  const zone = document.getElementById('circleZone');
+  const container = document.getElementById('particles');
+  const r = zone.offsetWidth / 2;
+  const p = document.createElement('div');
+  p.style.cssText = `position:absolute;border-radius:50%;pointer-events:none;`;
+  const size = 2 + Math.random() * 3;
+  const angle = Math.random() * 360;
+  const dist = r * (0.4 + Math.random() * 0.5);
+  const x = r + Math.cos(angle * Math.PI/180) * dist;
+  const y = r + Math.sin(angle * Math.PI/180) * dist;
+  const colors = ['#7ec8e3','#a89cff','#6c63ff','#fff'];
+  p.style.width = p.style.height = size+'px';
+  p.style.left = x+'px'; p.style.top = y+'px';
+  p.style.background = colors[Math.floor(Math.random()*colors.length)];
+  container.appendChild(p);
+  const tx = (Math.random()-0.5)*60, ty = (Math.random()-0.5)*60;
+  p.animate([
+    {opacity:0, transform:'scale(0) translate(0,0)'},
+    {opacity:0.8, transform:`scale(1) translate(${tx/2}px,${ty/2}px)`},
+    {opacity:0, transform:`scale(0.3) translate(${tx}px,${ty}px)`}
+  ], {duration:1400+Math.random()*800, easing:'ease-out'}).onfinish = () => p.remove();
+}
+
+function tick(ts) {
+  if (!running) return;
+  if (!phaseStart) phaseStart = ts;
+
+  const elapsed = (ts - phaseStart) / 1000;
+  const fraction = Math.min(elapsed / phases[phaseIdx].duration, 1);
+
+  // Arc
+  setArc(fraction);
+
+  // Countdown
+  cntDown.textContent = Math.max(Math.ceil(phases[phaseIdx].duration - elapsed), 0);
+
+  // Session progress bar (by cycles)
+  const sessionFraction = Math.min((cycle - 1 + fraction * (phaseIdx === 2 ? 1 : 0)) / MAX_CYCLES, 1);
+  sessionFill.style.width = (cycle / MAX_CYCLES * 100) + '%';
+  sessionTime.textContent = `цикл ${cycle} из ${MAX_CYCLES}`;
+
+  // Particles on inhale
+  if (phaseIdx === 0 && Math.random() < 0.04) spawnParticle();
+
+  // Плавное затихание музыки на последнем выдохе
+  if (cycle === MAX_CYCLES && phaseIdx === 2 && !audio.paused) {
+    audio.volume = Math.max(0, 0.85 * (1 - fraction));
+  }
+
+  if (fraction >= 1) {
+    phaseIdx = (phaseIdx + 1) % phases.length;
+    if (phaseIdx === 0) {
+      cycle++;
+      if (cycle > MAX_CYCLES) { endSession(); return; }
+      cycleInfo.textContent = `цикл ${cycle} из ${MAX_CYCLES}`;
+      sessionFill.style.width = ((cycle - 1) / MAX_CYCLES * 100) + '%';
+    }
+    startPhase(ts + 16);
+    return;
+  }
+
+  rafId = requestAnimationFrame(tick);
+}
+
+function startPhase(ts) {
+  const ph = phases[phaseIdx];
+  phaseStart = ts;
+
+  label.style.opacity = 0;
+  setTimeout(() => { label.textContent = ph.name; label.style.opacity = 1; }, 200);
+
+  const easing = phaseIdx === 0 ? 'ease-in' : phaseIdx === 2 ? 'ease-out' : 'linear';
+  inner.style.transition = `transform ${ph.duration}s ${easing}`;
+  setScale(ph.scale);
+
+  arc.style.filter = `drop-shadow(0 0 8px ${ph.color})`;
+  activateDot(phaseIdx);
+
+  rafId = requestAnimationFrame(tick);
+}
+
+function startBreathing() {
+  startBtn.style.display = 'none';
+  finishMsg.classList.remove('show');
+
+  // Countdown 3-2-1
+  let count = 3;
+  label.textContent = 'Приготовьтесь';
+  cntDown.textContent = count;
+  cntDown.style.fontSize = 'clamp(2.5rem, 8vw, 4rem)';
+
+  const countInterval = setInterval(() => {
+    count--;
+    if (count > 0) {
+      cntDown.textContent = count;
+      cntDown.animate([
+        {transform: 'scale(1.5)', opacity: 0.4},
+        {transform: 'scale(1)', opacity: 1}
+      ], {duration: 700, easing: 'ease-out'});
+    } else {
+      clearInterval(countInterval);
+      cntDown.style.fontSize = '';
+      label.textContent = 'Готовы?';
+      cntDown.textContent = '—';
+
+      running = true;
+      cycle = 1;
+      phaseIdx = 0;
+      phaseStart = null;
+      cycleInfo.textContent = `цикл 1 из ${MAX_CYCLES}`;
+      sessionWrap.style.display = 'flex';
+
+      audio.currentTime = 0;
+      audio.volume = 0;
+      audio.play().catch(() => {});
+      let vol = 0;
+      const fadeIn = setInterval(() => {
+        vol = Math.min(vol + 0.05, 0.85);
+        audio.volume = vol;
+        if (vol >= 0.85) clearInterval(fadeIn);
+      }, 150);
+
+      startPhase(performance.now());
+    }
+  }, 1000);
+}
+
+function endSession() {
+  running = false;
+  if (rafId) cancelAnimationFrame(rafId);
+
+  // Fade out audio
+  let vol = audio.volume;
+  const fadeOut = setInterval(() => {
+    vol = Math.max(vol - 0.05, 0);
+    audio.volume = vol;
+    if (vol <= 0) { clearInterval(fadeOut); audio.pause(); }
+  }, 150);
+
+  setArc(1);
+  setScale(1.0);
+  label.textContent = 'Готово';
+  cntDown.textContent = '✓';
+  dots.forEach(d => d.classList.remove('active'));
+  sessionFill.style.width = '100%';
+
+  setTimeout(() => {
+    finishMsg.classList.add('show');
+    startBtn.textContent = 'Повторить';
+    startBtn.style.display = 'block';
+    startBtn.onclick = resetAndStart;
+  }, 800);
+}
+
+function resetAndStart() {
+  setArc(0);
+  setScale(1.0);
+  inner.style.transition = 'transform 1s ease';
+  label.textContent = 'Готовы?';
+  cntDown.textContent = '—';
+  cycleInfo.textContent = '5 циклов · ~8 мин';
+  sessionFill.style.width = '0%';
+  finishMsg.classList.remove('show');
+  startBreathing();
+}
+
+startBtn.onclick = startBreathing;
+</script>
+</body>
+</html>
