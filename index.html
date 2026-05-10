@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Дыхание 4·7·8</title>
 <script src="telegram-web-app.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Jost:wght@200;300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Jost:wght@200;300&family=Raleway:wght@400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -290,6 +290,105 @@
   @keyframes fadeIn { to { opacity: 1; } }
   .app { display: none; }
   .app.ready { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+
+  /* === Info screen additions === */
+
+  .header-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%;
+  }
+  .subtitle {
+    font-family: 'Raleway', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #6c63aa;
+    text-align: center;
+  }
+
+  .info-block {
+    width: 100%; max-width: 380px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 10px; text-align: center;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 18px;
+    padding: 18px 20px;
+  }
+  .info-intro {
+    font-family: 'Raleway', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: #8a82d8;
+  }
+  .info-list {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-direction: column; gap: 7px;
+    font-family: 'Raleway', sans-serif;
+    font-weight: 400;
+    font-size: 14px; line-height: 1.4;
+    color: #d8d4f0;
+    text-align: left;
+    width: 100%;
+  }
+  .info-list li { position: relative; padding-left: 18px; }
+  .info-list li::before {
+    content: "·";
+    color: #a89cff;
+    font-weight: 700;
+    position: absolute;
+    left: 4px; top: 0;
+  }
+  .info-details {
+    display: none;
+    margin-top: 4px;
+    font-family: 'Raleway', sans-serif;
+    font-weight: 400;
+    font-size: 13px; line-height: 1.6;
+    color: #c8c0e8;
+    text-align: left;
+  }
+  .info-details p { margin-bottom: 8px; text-align: left; }
+  .info-details p:last-child { margin-bottom: 0; }
+  .recommend {
+    margin-top: 10px;
+    padding: 12px 14px;
+    background: rgba(108,99,255,0.1);
+    border: 1px solid rgba(108,99,255,0.3);
+    border-radius: 10px;
+    font-family: 'Raleway', sans-serif;
+    font-weight: 400;
+    font-size: 13px; line-height: 1.5;
+    color: #d8d4f0;
+    text-align: left;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .info-toggle {
+    background: none; border: none; cursor: pointer;
+    color: #a89cff;
+    font-family: 'Raleway', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    padding: 8px 14px;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: 0.04em;
+  }
+
+  body.details-open .info-details { display: block; }
+
+  body.session-active .info-block,
+  body.session-active .subtitle { display: none; }
+
+  .phases-row { display: none; }
+  .cycle-info { display: none; }
+  body.session-active .phases-row { display: flex; }
+  body.session-active .cycle-info { display: block; }
+
+  body:not(.session-active) { overflow-y: auto; }
+  body:not(.session-active) .app.ready { height: auto; min-height: 100%; }
 </style>
 </head>
 <body>
@@ -304,7 +403,27 @@
 </audio>
 
 <div class="container">
-  <div class="title">Дыхание 4 · 7 · 8</div>
+  <div class="header-wrap">
+    <div class="title">Дыхание 4 · 7 · 8</div>
+    <div class="subtitle">На сон и при тревоге</div>
+  </div>
+
+  <div class="info-block" id="infoBlock">
+    <div class="info-intro">Практика для тех, кто хочет:</div>
+    <ul class="info-list">
+      <li>Быстрее заснуть и не лежать с мыслями</li>
+      <li>Успокоиться в момент стресса</li>
+      <li>Тренировать парасимпатическую систему</li>
+    </ul>
+    <div class="info-details">
+      <p>Эта техника приведёт тебя из состояния напряжения и возбуждения в режим покоя и восстановления. Замедляет сердечный ритм и ускоряет засыпание. Сначала тренируй днём 3-5 минут, затем переноси на ночь. Подходит с 10-11 лет.</p>
+      <div class="recommend">
+        <span>🔁</span>
+        <span>Можно делать ежедневно перед сном или при ночных пробуждениях.</span>
+      </div>
+    </div>
+    <button class="info-toggle" id="infoToggle" type="button">↓ Подробнее</button>
+  </div>
 
   <div class="circle-zone" id="circleZone">
     <div class="ambient"></div>
@@ -435,6 +554,55 @@ for (let i = 0; i < 100; i++) {
   starsEl.appendChild(s);
 }
 
+// === Audio Context for tones ===
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+// Play a soft sine tone: freq Hz, duration ms, volume 0-1
+function playTone(freq, durationMs, vol = 0.18) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    const dur = durationMs / 1000;
+    gain.gain.setValueAtTime(0, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(vol, ctx.currentTime + dur - 0.15);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + dur);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + dur);
+  } catch(e) {}
+}
+
+function vibrate(pattern) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+// Phase cues:
+//   Вдох     - низкий тон 220Hz + short buzz
+//   Задержка - средний тон 330Hz + double buzz
+//   Выдох    - высокий тон 440Hz + long soft buzz
+function phaseCue(phaseIdx) {
+  if (phaseIdx === 0) {
+    playTone(220, 600, 0.22);
+    vibrate([40]);
+  } else if (phaseIdx === 1) {
+    playTone(330, 400, 0.18);
+    vibrate([30, 60, 30]);
+  } else {
+    playTone(440, 800, 0.15);
+    vibrate([80]);
+  }
+}
+
 // Config
 const MAX_CYCLES = 5;
 const phases = [
@@ -456,6 +624,12 @@ const sessionTime = document.getElementById('sessionTime');
 const sessionWrap = document.getElementById('sessionBarWrap');
 const finishMsg   = document.getElementById('finishMsg');
 const audio       = document.getElementById('bgAudio');
+const infoToggle  = document.getElementById('infoToggle');
+
+infoToggle.addEventListener('click', function() {
+  const open = document.body.classList.toggle('details-open');
+  infoToggle.textContent = open ? '↑ Свернуть' : '↓ Подробнее';
+});
 
 let running = false;
 let cycle = 0;
@@ -539,6 +713,9 @@ function startPhase(ts) {
   const ph = phases[phaseIdx];
   phaseStart = ts;
 
+  // Play tone + vibrate at start of each phase
+  phaseCue(phaseIdx);
+
   label.style.opacity = 0;
   setTimeout(() => { label.textContent = ph.name; label.style.opacity = 1; }, 200);
 
@@ -553,6 +730,11 @@ function startPhase(ts) {
 }
 
 function startBreathing() {
+  // Unlock AudioContext on user gesture
+  getAudioCtx();
+
+  document.body.classList.add('session-active');
+
   startBtn.style.display = 'none';
   finishMsg.classList.remove('show');
 
@@ -616,6 +798,11 @@ function endSession() {
   cntDown.textContent = '✓';
   dots.forEach(d => d.classList.remove('active'));
   sessionFill.style.width = '100%';
+
+  // Finishing tone - soft low chord
+  playTone(220, 1200, 0.18);
+  setTimeout(() => playTone(330, 1000, 0.12), 300);
+  vibrate([60, 100, 60]);
 
   setTimeout(() => {
     finishMsg.classList.add('show');
