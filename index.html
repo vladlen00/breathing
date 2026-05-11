@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Дыхание 4·7·8</title>
 <script src="telegram-web-app.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Jost:wght@200;300&family=Raleway:wght@400;500&display=swap" rel="stylesheet">
@@ -65,6 +65,7 @@
     align-items: center;
     gap: clamp(24px, 5vh, 44px);
     padding: 24px;
+    padding-top: max(24px, env(safe-area-inset-top));
     width: 100%;
     max-width: 400px;
   }
@@ -381,6 +382,8 @@
 
   body.session-active .info-block,
   body.session-active .subtitle { display: none; }
+
+  body:not(.session-active) .circle-zone { display: none; }
 
   .phases-row { display: none; }
   body.session-active .phases-row { display: flex; }
