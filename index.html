@@ -391,6 +391,28 @@
 
   body:not(.session-active) { overflow-y: auto; }
   body:not(.session-active) .app.ready { height: auto; min-height: 100%; }
+
+  /* Duration picker (input screen only) */
+  .dur-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+  .dur-row { display: flex; gap: 8px; justify-content: center; width: 100%; }
+  .dur-btn {
+    flex: 1 1 0; min-width: 0; min-height: 44px;
+    background: none; border: 1px solid rgba(168,156,255,0.22); border-radius: 40px;
+    color: rgba(168,156,255,0.6); font-family: 'Jost', sans-serif; font-weight: 300;
+    font-size: 0.8rem; letter-spacing: 0.12em; padding: 10px 6px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    -webkit-tap-highlight-color: transparent; transition: all 0.3s ease;
+  }
+  .dur-btn .dur-sub { font-size: 0.65rem; letter-spacing: 0.1em; opacity: 0.7; }
+  .dur-btn.on {
+    border-color: rgba(168,156,255,0.65); color: #fff; background: rgba(168,156,255,0.12);
+    box-shadow: 0 0 18px rgba(168,156,255,0.18);
+  }
+  .dur-note {
+    font-family: 'Raleway', sans-serif; font-size: 12px; line-height: 1.4;
+    color: rgba(168,156,255,0.5); text-align: center; max-width: 300px;
+  }
+  body.session-active .dur-wrap { display: none; }
 </style>
 </head>
 <body>
@@ -411,6 +433,14 @@
     <div class="subtitle">На сон и при тревоге</div>
   </div>
 
+  <div class="dur-wrap">
+    <div class="dur-row" id="durRow">
+      <button class="dur-btn" type="button" data-v="4">4 цикла<span class="dur-sub">~1,5 мин</span></button>
+      <button class="dur-btn" type="button" data-v="8">8 циклов<span class="dur-sub">~2,5 мин</span></button>
+    </div>
+    <div class="dur-note">Если закружится голова, вернитесь к обычному дыханию</div>
+  </div>
+
   <div class="info-block" id="infoBlock">
     <div class="info-intro">Практика для тех, кто хочет:</div>
     <ul class="info-list">
@@ -419,7 +449,7 @@
       <li>Тренировать парасимпатическую систему</li>
     </ul>
     <div class="info-details">
-      <p>Эта техника приведёт тебя из состояния напряжения и возбуждения в режим покоя и восстановления. Замедляет сердечный ритм и ускоряет засыпание. Сначала тренируй днём 3-5 минут, затем переноси на ночь. Подходит с 10-11 лет.</p>
+      <p>Эта техника приведёт тебя из состояния напряжения и возбуждения в режим покоя и восстановления. Замедляет сердечный ритм и ускоряет засыпание. Сначала потренируйся днём: 4 цикла, со временем до 8, затем переноси на ночь. Подходит с 10-11 лет.</p>
       <div class="recommend">
         <span>🔁</span>
         <span>Можно делать ежедневно перед сном или при ночных пробуждениях.</span>
@@ -458,10 +488,8 @@
 
   <div class="session-bar-wrap" id="sessionBarWrap" style="display:none;">
     <div class="session-bar-track"><div class="session-bar-fill" id="sessionBarFill"></div></div>
-    <div class="session-time" id="sessionTime">цикл 1 из 5</div>
+    <div class="session-time" id="sessionTime"></div>
   </div>
-
-  <div class="cycle-info" id="cycleInfo">5 циклов · ~2 мин</div>
 
   <button class="start-btn" id="startBtn">Начать практику</button>
 
@@ -707,7 +735,32 @@ function phaseCue(phaseIdx) {
 }
 
 // Config
-const MAX_CYCLES = 5;
+// Выбор числа циклов. Конец всегда после полного выдоха последнего цикла.
+const DUR_KEY = 'breathing478_duration';
+const DUR_OPTIONS = [4, 8];
+let MAX_CYCLES = 4;   // по умолчанию 4 цикла
+try {
+  const saved = parseInt(localStorage.getItem(DUR_KEY) || '', 10);
+  if (DUR_OPTIONS.includes(saved)) MAX_CYCLES = saved;
+} catch (e) {}
+
+const durRow = document.getElementById('durRow');
+function renderDur() {
+  durRow.querySelectorAll('.dur-btn').forEach(b => {
+    const on = Number(b.dataset.v) === MAX_CYCLES;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+durRow.addEventListener('click', e => {
+  const b = e.target.closest('.dur-btn');
+  if (!b || running) return;
+  MAX_CYCLES = Number(b.dataset.v);
+  try { localStorage.setItem(DUR_KEY, String(MAX_CYCLES)); } catch (e) {}
+  renderDur();
+});
+renderDur();
+
 const phases = [
   { name: 'Вдох',     duration: 4, scale: 1.18, color: '#7ec8e3' },
   { name: 'Задержка', duration: 7, scale: 1.18, color: '#a89cff' },
@@ -719,7 +772,6 @@ const arc         = document.getElementById('progressArc');
 const inner       = document.getElementById('innerCircle');
 const label       = document.getElementById('phaseLabel');
 const cntDown     = document.getElementById('countdown');
-const cycleInfo   = document.getElementById('cycleInfo');
 const startBtn    = document.getElementById('startBtn');
 const dots        = [0,1,2].map(i => document.getElementById('dot'+i));
 const sessionFill = document.getElementById('sessionBarFill');
@@ -898,6 +950,8 @@ function endSession() {
   label.textContent = 'Готово';
   cntDown.textContent = '✓';
   dots.forEach(d => d.classList.remove('active'));
+  // Финал: полоска сразу на 100%, без догоняющей анимации
+  sessionFill.style.transition = 'none';
   sessionFill.style.width = '100%';
 
   // Finishing tone - soft low chord
@@ -919,8 +973,9 @@ function resetAndStart() {
   inner.style.transition = 'transform 1s ease';
   label.textContent = 'Готовы?';
   cntDown.textContent = '—';
-  cycleInfo.textContent = '5 циклов · ~2 мин';
   sessionFill.style.width = '0%';
+  void sessionFill.offsetWidth;          // применить 0% без анимации
+  sessionFill.style.transition = '';     // дальше снова плавно
   finishMsg.classList.remove('show');
   startBreathing();
 }
